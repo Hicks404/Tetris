@@ -7,7 +7,7 @@ int main()
     _CrtSetBreakAlloc(185); //Will automatically cause break point on allocationm with matching Id
 #endif
 
-    MathLibrary::Application* app = new MathLibrary::Application(800, 420, "Tetris");
+    MathLibrary::Application* app = new MathLibrary::Application(1280, 720, "Tetris");
 
     const int state = app->Run();
 
