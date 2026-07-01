@@ -1,9 +1,17 @@
-#include <cstdlib>
-#include <iostream>
+#include "application.h"
 
-int main(int argC, char* argV[])
+int main()
 {
-	std::cout << "Hello, World!\n";
+#if _DEBUG
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF); //enables leak detection
+    _CrtSetBreakAlloc(185); //Will automatically cause break point on allocationm with matching Id
+#endif
 
-	return EXIT_SUCCESS;
+    MathLibrary::Application* app = new MathLibrary::Application(800, 420, "Tetris");
+
+    const int state = app->Run();
+
+    delete app;
+
+    return state;
 }
