@@ -2,6 +2,7 @@
 
 #include <ctime>
 #include <iostream>
+#include <random>
 #include <string>
 
 using std::function;
@@ -12,8 +13,10 @@ namespace MathLibrary
 {
 	Application::Application(int _w, int _h, const char* _title) 
 		: m_title{ _title }, m_width{ _w }, m_height{ _h }, closed{ false }, m_slotsize{ _h/20 },
-		curBlock{ nullptr }, moveCountDown{ 0.f }
-	{}
+		curBlock{ nullptr }, moveCountDown{ 0.f }, totalWeight{ 0 }
+	{
+		
+	}
 
 	MathLibrary::Application::~Application() {}
 
@@ -172,9 +175,39 @@ namespace MathLibrary
 		}
 	}
 
+	void Application::QueueAdd(int amount)
+	{
+		int totalBlocks = blockMap.size();
+
+		for (int i = 0; i < amount; ++i)
+		{
+			int randomNum = rand() % totalWeight + 1;
+			int choice = 0;
+
+			for (int i = 0; i <= totalBlocks; ++i)
+			{
+				randomNum -= blockMap[i].weight;
+
+				if (randomNum <= 0)
+				{
+					choice = i;
+					break;
+				}
+			}
+
+			BlockQueue.emplace_back(new Block(blockMap[choice], 5, 0));
+		}
+	}
+
 	void Application::BlockSpawn()
 	{
-		curBlock = new Block(blockMap[rand() % 7 + 1], 5, 0);
+		// Get block from queue
+		curBlock = new Block(BlockQueue.front()->data, 5, 0);
+
+		// Removes from vector
+		BlockQueue.erase(BlockQueue.begin());
+
+		QueueAdd(1);
 	}
 
 	void Application::RotateBlock()
@@ -270,6 +303,16 @@ namespace MathLibrary
 
 	void Application::BeginPlay()
 	{
+		// Set total weight of blocks
+		for (std::pair<int, blockStruct> block : blockMap)
+		{
+			totalWeight += block.second.weight;
+		}
+
+		// Add blocks to queue
+		QueueAdd(3);
+
+		// Set grid num
 		SetOneGrid(0);
 	}
 
@@ -319,6 +362,12 @@ namespace MathLibrary
 		}
 
 		for (Block* block : DeletionQueue)
+		{
+			delete block;
+			block = nullptr;
+		}
+		
+		for (Block* block : BlockQueue)
 		{
 			delete block;
 			block = nullptr;

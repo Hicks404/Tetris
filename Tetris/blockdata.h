@@ -26,6 +26,8 @@ namespace MathLibrary
 {
 	inline unordered_map<int, blockStruct> blockMap
 	{
+		// standard tetris blocks
+
 		{1, {
 			{
 			0,0,0,0,
@@ -108,6 +110,48 @@ namespace MathLibrary
 			3,2,
 			0,
 			{3,3},
-			PURPLE, 20} }
+			PURPLE, 20} },
+		
+		// custom blocks
+
+		{8, {
+			{
+			1,1,0,0,
+			0,0,0,0,
+			0,0,0,0,
+			0,0,0,0
+			},
+			2,1,
+			0,
+			{2,2},
+			RED, 10} },
+		
+		{9, {
+			{
+			1,1,1,0,
+			1,0,1,0,
+			0,0,0,0,
+			0,0,0,0
+			},
+			3,2,
+			0,
+			{3,3},
+			RED, 10} },
+		
+		{10, {
+			{
+			0,1,0,0,
+			1,1,1,0,
+			0,1,0,0,
+			0,0,0,0
+			},
+			3,3,
+			0,
+			{3,3},
+			RED, 10} }
 	};
 }
+
+// To do list
+// fix rotation so it consistently goes 90 deg right
+// stop push down controls for like half a second after block is frozen

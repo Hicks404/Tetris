@@ -47,6 +47,10 @@ namespace MathLibrary
 
 		void SetOneGrid(int set);
 
+		/** Add block to queue */
+		void QueueAdd(int amount);
+
+		/** Spawn tetris block */
 		void BlockSpawn();
 
 		void RotateBlock();
@@ -62,6 +66,8 @@ namespace MathLibrary
 		int m_grid[gridX][gridY];
 
 		int m_slotsize;
+
+		int totalWeight;
 
 		bool closed;
 
