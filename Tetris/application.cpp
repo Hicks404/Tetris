@@ -59,9 +59,9 @@ namespace MathLibrary
 
 	void Application::DrawGrid()
 	{
-		for (int i = 0; i < 10; ++i)
+		for (int i = 0; i < gridX; ++i)
 		{
-			for (int j = 0; j < 20; ++j)
+			for (int j = 0; j < gridY; ++j)
 			{
 				if (m_grid[i][j] == 2)
 				{
@@ -89,7 +89,7 @@ namespace MathLibrary
 					int x = curBlock->GetX();
 					int y = curBlock->GetY();
 
-					if (y+i+1 >= 21 || m_grid[j + x][i + y] == 1 && m_grid[j + x][i + y + 1] == 2)
+					if (y+i+1 >= gridY+1 || m_grid[j + x][i + y] == 1 && m_grid[j + x][i + y + 1] == 2)
 					{
 						curBlock->SetFreeze(true);
 						return;
@@ -120,11 +120,49 @@ namespace MathLibrary
 		}
 	}
 
+	void Application::TetrisCheck()
+	{
+		for (int j = 0; j < gridY; ++j)
+		{
+			bool check = true;
+			for (int i = 0; i < gridX; ++i)
+			{
+				if (m_grid[i][j] != 2)
+				{
+					check = false;
+				}
+			}
+
+			if (check)
+			{
+				Tetris(j);
+			}
+		}
+	}
+
+	void Application::Tetris(int y)
+	{
+		// Make rows go down
+		for (int j = y; j > 0; --j)
+		{
+			for (int i = 0; i < gridX; ++i)
+			{
+				m_grid[i][j] = m_grid[i][j - 1];
+			}
+		}
+
+		// Make top row clear
+		for (int i = 0; i < gridX; ++i)
+		{
+			m_grid[i][0] = 0;
+		}
+	}
+
 	void Application::SetOneGrid(int set)
 	{
-		for (int i = 0; i < 10; ++i)
+		for (int i = 0; i < gridX; ++i)
 		{
-			for (int j = 0; j < 20; ++j)
+			for (int j = 0; j < gridY; ++j)
 			{
 				if (m_grid[i][j] == 1)
 				{
@@ -141,26 +179,61 @@ namespace MathLibrary
 
 	void Application::RotateBlock()
 	{
+		int pX = curBlock->data.pivot.x;
+		int pY = curBlock->data.pivot.y;
+
 		// store old shape
 		int og[4][4];
-		for (int i = 0; i < 4; ++i)
+		for (int i = 0; i < pX; ++i)
 		{
-			for (int j = 0; j < 4; ++j)
+			for (int j = 0; j < pY; ++j)
 			{
 				og[i][j] = curBlock->data.shape[i][j];
 			}
 		}
 
-		// set shape to rotated
-		for (int i = 0; i < 4; ++i)
+		// check if blocked by preexisting blocks
+		for (int i = 0; i < pX; ++i)
 		{
-			for (int j = 0; j < 4; ++j)
+			for (int j = 0; j < pY; ++j)
 			{
-				curBlock->data.shape[3 - j][i] = og[i][j];
+				if (m_grid[curBlock->GetX() + i][curBlock->GetY() + j] == 2)
+				{
+					return;
+				}
 			}
 		}
 
+		// set shape to rotated
+		for (int i = 0; i < pX; ++i)
+		{
+			for (int j = 0; j < pY; ++j)
+			{
+				curBlock->data.shape[pX-1 - j][i] = og[i][j];
+			}
+		}
+
+		// swaps the width and height
 		curBlock->SwapDim();
+	}
+
+	void Application::xMove(int num)
+	{
+		for (int i = 0; i < curBlock->data.pivot.x; ++i)
+		{
+			for (int j = 0; j < curBlock->data.pivot.y; ++j)
+			{
+				int curX = curBlock->GetX() + j;
+				int curY = curBlock->GetY() + i;
+
+				if (m_grid[curX+num][curY] == 2)
+				{
+					return;
+				}
+			}
+		}
+
+		curBlock->Move(num, 0);
 	}
 
 	bool Application::IsBlockXBlocked(int x)
@@ -171,25 +244,25 @@ namespace MathLibrary
 	void Application::Controls()
 	{
 		//Controls
-		if (IsKeyDown(KEY_S) && plummetCountDown > 0.05f)
+		if (IsKeyDown(KEY_DOWN) && plummetCountDown > 0.05f)
 		{
 			curBlock->Move(0, 1);
 			plummetCountDown = 0.f;
 		}
 
-		if (IsKeyDown(KEY_A) && controlCountDown > 0.1f)
+		if (IsKeyDown(KEY_LEFT) && controlCountDown > 0.1f)
 		{
-			curBlock->Move(-1, 0);
+			xMove(-1);
 			controlCountDown = 0.f;
 		}
 
-		if (IsKeyDown(KEY_D) && controlCountDown > 0.1f)
+		if (IsKeyDown(KEY_RIGHT) && controlCountDown > 0.1f)
 		{
-			curBlock->Move(1, 0);
+			xMove(1);
 			controlCountDown = 0.f;
 		}
 		
-		if (IsKeyPressed(KEY_R))
+		if (IsKeyPressed(KEY_UP))
 		{
 			RotateBlock();
 		}
@@ -228,6 +301,8 @@ namespace MathLibrary
 			DeletionQueue.emplace_back(curBlock);
 			curBlock = nullptr;
 		}
+
+		TetrisCheck();
 	}
 
 	void Application::Render()

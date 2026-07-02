@@ -15,8 +15,8 @@ namespace MathLibrary
 		xPos += x;
 		yPos += y;
 
-		xPos = std::min(xPos, 10 - data.leftOffset - width);
-		xPos = std::max(xPos, 0 - data.leftOffset);
+		xPos = std::min(xPos, 10 - data.offset - width);
+		xPos = std::max(xPos, 0 - data.offset);
 	}
 
 	void Block::Set(int x, int y)
@@ -60,6 +60,26 @@ namespace MathLibrary
 		int oldWidth = width;
 		width = height;
 		height = oldWidth;
+
+		// Also fixes offset
+		for (int i = 0; i < 4; ++i)
+		{
+			bool foundOne = false;
+			for (int j = 0; j < 4; ++j)
+			{
+				if (data.shape[j][i] == 1)
+				{
+					foundOne = true;
+					break;
+				}
+			}
+
+			if (foundOne)
+			{
+				data.offset = i;
+				return;
+			}
+		}
 	}
 
 	bool Block::GetSpecShape(int i, int j)

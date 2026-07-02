@@ -39,16 +39,27 @@ namespace MathLibrary
 		void CheckForFreeze();
 		void UpdateGrid();
 
+		/** Detect when to tetris */
+		void TetrisCheck();
+
+		/** Clear blocks in full line */
+		void Tetris(int y);
+
 		void SetOneGrid(int set);
 
 		void BlockSpawn();
 
 		void RotateBlock();
 
+		void xMove(int num);
+
 		bool IsBlockXBlocked(int x);
 
 	private:
-		int m_grid[10][20];
+		static const int gridX = 10;
+		static const int gridY = 20;
+
+		int m_grid[gridX][gridY];
 
 		int m_slotsize;
 
