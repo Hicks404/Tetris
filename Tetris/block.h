@@ -16,6 +16,13 @@ namespace MathLibrary
 
 		int GetX();
 		int GetY();
+		int GetH();
+		int GetW();
+
+		void SetH(int h);
+		void SetW(int w);
+
+		void SwapDim();
 
 		bool GetSpecShape(int i, int j);
 
@@ -30,5 +37,8 @@ namespace MathLibrary
 		int xPos;
 		int yPos;
 		bool freeze;
+
+		int width;
+		int height;
 	};
 }

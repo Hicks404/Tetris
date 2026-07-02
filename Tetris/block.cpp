@@ -5,7 +5,7 @@
 namespace MathLibrary
 {
 	Block::Block(blockStruct data, int x, int y) 
-		: data{ data }, xPos{ x }, yPos{ y }, freeze{ false }
+		: data{ data }, xPos{ x }, yPos{ y }, freeze{ false }, width{ data.width }, height{ data.height }
 	{}
 
 	Block::~Block() {}
@@ -14,6 +14,9 @@ namespace MathLibrary
 	{
 		xPos += x;
 		yPos += y;
+
+		xPos = std::min(xPos, 10 - data.leftOffset - width);
+		xPos = std::max(xPos, 0 - data.leftOffset);
 	}
 
 	void Block::Set(int x, int y)
@@ -30,6 +33,33 @@ namespace MathLibrary
 	int Block::GetY()
 	{
 		return yPos;
+	}
+
+	int Block::GetH()
+	{
+		return height;
+	}
+
+	int Block::GetW()
+	{
+		return width;
+	}
+
+	void Block::SetH(int h)
+	{
+		height = h;
+	}
+
+	void Block::SetW(int w)
+	{
+		width = w;
+	}
+
+	void Block::SwapDim()
+	{
+		int oldWidth = width;
+		width = height;
+		height = oldWidth;
 	}
 
 	bool Block::GetSpecShape(int i, int j)

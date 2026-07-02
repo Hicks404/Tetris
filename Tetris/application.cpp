@@ -78,9 +78,8 @@ namespace MathLibrary
 		}
 	}
 
-	void Application::UpdateGrid()
+	void Application::CheckForFreeze()
 	{
-		SetOneGrid(0);
 		for (int i = 0; i < 4; ++i)
 		{
 			for (int j = 0; j < 4; ++j)
@@ -90,14 +89,31 @@ namespace MathLibrary
 					int x = curBlock->GetX();
 					int y = curBlock->GetY();
 
-					if (y <= 18 && !curBlock->GetFreeze() && m_grid[i + x][j + y] != 2)
+					if (y+i+1 >= 21 || m_grid[j + x][i + y] == 1 && m_grid[j + x][i + y + 1] == 2)
 					{
-						m_grid[i + x][j + y] = 1;
-					}
-					else
-					{
-						m_grid[i + x][j + y - 1] = 1;
 						curBlock->SetFreeze(true);
+						return;
+					}
+				}
+			}
+		}
+	}
+
+	void Application::UpdateGrid()
+	{
+		if (!curBlock->GetFreeze())
+		{
+			SetOneGrid(0);
+			for (int i = 0; i < 4; ++i)
+			{
+				for (int j = 0; j < 4; ++j)
+				{
+					if (curBlock->GetSpecShape(i, j))
+					{
+						int x = curBlock->GetX();
+						int y = curBlock->GetY();
+
+						m_grid[j + x][i + y] = 1;
 					}
 				}
 			}
@@ -120,16 +136,45 @@ namespace MathLibrary
 
 	void Application::BlockSpawn()
 	{
-		curBlock = new Block(blockMap[rand() % 6 + 1], 5, 0);
+		curBlock = new Block(blockMap[rand() % 7 + 1], 5, 0);
+	}
+
+	void Application::RotateBlock()
+	{
+		// store old shape
+		int og[4][4];
+		for (int i = 0; i < 4; ++i)
+		{
+			for (int j = 0; j < 4; ++j)
+			{
+				og[i][j] = curBlock->data.shape[i][j];
+			}
+		}
+
+		// set shape to rotated
+		for (int i = 0; i < 4; ++i)
+		{
+			for (int j = 0; j < 4; ++j)
+			{
+				curBlock->data.shape[3 - j][i] = og[i][j];
+			}
+		}
+
+		curBlock->SwapDim();
+	}
+
+	bool Application::IsBlockXBlocked(int x)
+	{
+		return false;
 	}
 
 	void Application::Controls()
 	{
 		//Controls
-		if (IsKeyDown(KEY_S) && controlCountDown > 0.1f)
+		if (IsKeyDown(KEY_S) && plummetCountDown > 0.05f)
 		{
 			curBlock->Move(0, 1);
-			controlCountDown = 0.f;
+			plummetCountDown = 0.f;
 		}
 
 		if (IsKeyDown(KEY_A) && controlCountDown > 0.1f)
@@ -143,6 +188,11 @@ namespace MathLibrary
 			curBlock->Move(1, 0);
 			controlCountDown = 0.f;
 		}
+		
+		if (IsKeyPressed(KEY_R))
+		{
+			RotateBlock();
+		}
 	}
 
 	void Application::BeginPlay()
@@ -154,6 +204,7 @@ namespace MathLibrary
 	{
 		moveCountDown += dt;
 		controlCountDown += dt;
+		plummetCountDown += dt;
 
 		if (curBlock == nullptr)
 		{
@@ -168,6 +219,7 @@ namespace MathLibrary
 
 		Controls();
 
+		CheckForFreeze();
 		UpdateGrid();
 
 		if (curBlock->GetFreeze())

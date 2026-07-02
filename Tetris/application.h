@@ -35,11 +35,17 @@ namespace MathLibrary
 
 	private:
 		void DrawGrid();
+
+		void CheckForFreeze();
 		void UpdateGrid();
 
 		void SetOneGrid(int set);
 
 		void BlockSpawn();
+
+		void RotateBlock();
+
+		bool IsBlockXBlocked(int x);
 
 	private:
 		int m_grid[10][20];
@@ -49,6 +55,7 @@ namespace MathLibrary
 		bool closed;
 
 		float moveCountDown;
+		float plummetCountDown;
 		float controlCountDown;
 
 	private:
