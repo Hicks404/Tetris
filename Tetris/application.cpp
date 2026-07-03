@@ -66,14 +66,14 @@ namespace MathLibrary
 		{
 			for (int j = 0; j < gridY; ++j)
 			{
-				if (m_grid[i][j] == 2)
+				if (m_grid[i][j].value == 2)
 				{
 					DrawRectangle(i * m_slotsize, j * m_slotsize, m_slotsize, m_slotsize, GRAY);
 				}
 
-				if (m_grid[i][j] == 1)
+				if (m_grid[i][j].value == 1)
 				{
-					DrawRectangle(i * m_slotsize, j * m_slotsize, m_slotsize, m_slotsize, BLUE);
+					DrawRectangle(i * m_slotsize, j * m_slotsize, m_slotsize, m_slotsize, m_grid[i][j].color);
 				}
 
 				DrawRectangleLines(i * m_slotsize, j * m_slotsize, m_slotsize, m_slotsize, BLACK);
@@ -92,7 +92,7 @@ namespace MathLibrary
 					int x = curBlock->GetX();
 					int y = curBlock->GetY();
 
-					if (y+i+1 >= gridY+1 || m_grid[j + x][i + y] == 1 && m_grid[j + x][i + y + 1] == 2)
+					if (y+i+1 >= gridY+1 || m_grid[j + x][i + y].value == 1 && m_grid[j + x][i + y + 1].value == 2)
 					{
 						curBlock->SetFreeze(true);
 						return;
@@ -116,7 +116,8 @@ namespace MathLibrary
 						int x = curBlock->GetX();
 						int y = curBlock->GetY();
 
-						m_grid[j + x][i + y] = 1;
+						m_grid[j + x][i + y].value = 1;
+						m_grid[j + x][i + y].color = curBlock->GetColor();
 					}
 				}
 			}
@@ -130,7 +131,7 @@ namespace MathLibrary
 			bool check = true;
 			for (int i = 0; i < gridX; ++i)
 			{
-				if (m_grid[i][j] != 2)
+				if (m_grid[i][j].value != 2)
 				{
 					check = false;
 				}
@@ -157,7 +158,7 @@ namespace MathLibrary
 		// Make top row clear
 		for (int i = 0; i < gridX; ++i)
 		{
-			m_grid[i][0] = 0;
+			m_grid[i][0].value = 0;
 		}
 	}
 
@@ -167,9 +168,9 @@ namespace MathLibrary
 		{
 			for (int j = 0; j < gridY; ++j)
 			{
-				if (m_grid[i][j] == 1)
+				if (m_grid[i][j].value == 1)
 				{
-					m_grid[i][j] = set;
+					m_grid[i][j].value = set;
 				}
 			}
 		}
@@ -205,6 +206,7 @@ namespace MathLibrary
 		curBlock = new Block(BlockQueue.front()->data, 5, 0);
 
 		// Removes from vector
+		delete BlockQueue.front();
 		BlockQueue.erase(BlockQueue.begin());
 
 		QueueAdd(1);
@@ -230,7 +232,7 @@ namespace MathLibrary
 		{
 			for (int j = 0; j < pY; ++j)
 			{
-				if (m_grid[curBlock->GetX() + i][curBlock->GetY() + j] == 2)
+				if (m_grid[curBlock->GetX() + i][curBlock->GetY() + j].value == 2)
 				{
 					return;
 				}
@@ -252,6 +254,7 @@ namespace MathLibrary
 
 	void Application::xMove(int num)
 	{
+		// Check if can move by num blocks
 		for (int i = 0; i < curBlock->data.pivot.x; ++i)
 		{
 			for (int j = 0; j < curBlock->data.pivot.y; ++j)
@@ -259,7 +262,7 @@ namespace MathLibrary
 				int curX = curBlock->GetX() + j;
 				int curY = curBlock->GetY() + i;
 
-				if (m_grid[curX+num][curY] == 2)
+				if (m_grid[curX+num][curY].value == 2 && curBlock->data.shape[i][j] == 1)
 				{
 					return;
 				}
@@ -269,9 +272,14 @@ namespace MathLibrary
 		curBlock->Move(num, 0);
 	}
 
-	bool Application::IsBlockXBlocked(int x)
+	void Application::moveBlockDown()
 	{
-		return false;
+		// doing same two functions twice to fix small bug. I'm SORRY :(
+		CheckForFreeze();
+		UpdateGrid();
+		curBlock->Move(0, 1);
+		CheckForFreeze();
+		UpdateGrid();
 	}
 
 	void Application::Controls()
@@ -279,7 +287,7 @@ namespace MathLibrary
 		//Controls
 		if (IsKeyDown(KEY_DOWN) && plummetCountDown > 0.05f)
 		{
-			curBlock->Move(0, 1);
+			moveBlockDown();
 			plummetCountDown = 0.f;
 		}
 
@@ -327,21 +335,20 @@ namespace MathLibrary
 			BlockSpawn();
 		}
 
-		if (moveCountDown > 0.5f)
+		if (moveCountDown > 1.f)
 		{
-			curBlock->Move(0, 1);
+			moveBlockDown();
 			moveCountDown = 0.f;
 		}
 
 		Controls();
 
-		CheckForFreeze();
 		UpdateGrid();
 
 		if (curBlock->GetFreeze())
 		{
 			SetOneGrid(2);
-			DeletionQueue.emplace_back(curBlock);
+			delete curBlock;
 			curBlock = nullptr;
 		}
 
@@ -350,6 +357,8 @@ namespace MathLibrary
 
 	void Application::Render()
 	{
+		DrawRectangle(0, 0, m_width, m_height, {80, 80, 80, 255});
+
 		DrawGrid();
 	}
 
@@ -360,17 +369,12 @@ namespace MathLibrary
 			delete curBlock;
 			curBlock = nullptr;
 		}
-
-		for (Block* block : DeletionQueue)
-		{
-			delete block;
-			block = nullptr;
-		}
 		
 		for (Block* block : BlockQueue)
 		{
 			delete block;
 			block = nullptr;
 		}
+		BlockQueue.clear();
 	}
 }

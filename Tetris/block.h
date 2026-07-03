@@ -19,6 +19,8 @@ namespace MathLibrary
 		int GetH();
 		int GetW();
 
+		Color GetColor();
+
 		void SetH(int h);
 		void SetW(int w);
 

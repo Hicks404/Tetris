@@ -14,6 +14,12 @@ using std::function;
 using std::unordered_map;
 using std::string;
 
+struct gridStor
+{
+	int value;
+	Color color;
+};
+
 namespace MathLibrary
 {
 	class Application
@@ -55,15 +61,17 @@ namespace MathLibrary
 
 		void RotateBlock();
 
+		/** Move block by X amount on X axis */
 		void xMove(int num);
 
-		bool IsBlockXBlocked(int x);
+		/** Move block down and update grid */
+		void moveBlockDown();
 
 	private:
 		static const int gridX = 10;
 		static const int gridY = 20;
 
-		int m_grid[gridX][gridY];
+		gridStor m_grid[gridX][gridY];
 
 		int m_slotsize;
 
@@ -77,7 +85,6 @@ namespace MathLibrary
 
 	private:
 		vector<Block*> BlockQueue;
-		vector<Block*> DeletionQueue;
 
 		Block* curBlock;
 

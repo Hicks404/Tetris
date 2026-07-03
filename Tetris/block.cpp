@@ -45,6 +45,11 @@ namespace MathLibrary
 		return width;
 	}
 
+	Color Block::GetColor()
+	{
+		return data.color;
+	}
+
 	void Block::SetH(int h)
 	{
 		height = h;
