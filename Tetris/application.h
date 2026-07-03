@@ -7,6 +7,7 @@
 #include <raylib/raylib.h>
 
 #include "blockdata.h"
+#include "leveldata.h"
 #include "block.h"
 
 using std::vector;
@@ -68,6 +69,8 @@ namespace MathLibrary
 		void moveBlockDown();
 
 	private:
+		const int leftOffset;
+
 		static const int gridX = 10;
 		static const int gridY = 20;
 
@@ -76,6 +79,11 @@ namespace MathLibrary
 		int m_slotsize;
 
 		int totalWeight;
+
+		int score;
+
+		int level;
+		float downTime;
 
 		bool closed;
 

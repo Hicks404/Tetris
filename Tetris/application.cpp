@@ -1,6 +1,7 @@
 #include "application.h"
 
 #include <ctime>
+#include <format>
 #include <iostream>
 #include <random>
 #include <string>
@@ -13,7 +14,8 @@ namespace MathLibrary
 {
 	Application::Application(int _w, int _h, const char* _title) 
 		: m_title{ _title }, m_width{ _w }, m_height{ _h }, closed{ false }, m_slotsize{ _h/20 },
-		curBlock{ nullptr }, moveCountDown{ 0.f }, totalWeight{ 0 }
+		curBlock{ nullptr }, moveCountDown{ 0.f }, totalWeight{ 0 }, score{ 0 }, downTime{ 1.f }, level{ 1 },
+		leftOffset{ 50 }
 	{
 		
 	}
@@ -43,8 +45,6 @@ namespace MathLibrary
 
 			Render();
 
-			DrawFPS(10, 10);
-
 			EndDrawing();
 
 			if (WindowShouldClose())
@@ -66,17 +66,12 @@ namespace MathLibrary
 		{
 			for (int j = 0; j < gridY; ++j)
 			{
-				if (m_grid[i][j].value == 2)
+				if (m_grid[i][j].value >= 1)
 				{
-					DrawRectangle(i * m_slotsize, j * m_slotsize, m_slotsize, m_slotsize, GRAY);
+					DrawRectangle(i * m_slotsize + leftOffset, j * m_slotsize, m_slotsize, m_slotsize, m_grid[i][j].color);
 				}
 
-				if (m_grid[i][j].value == 1)
-				{
-					DrawRectangle(i * m_slotsize, j * m_slotsize, m_slotsize, m_slotsize, m_grid[i][j].color);
-				}
-
-				DrawRectangleLines(i * m_slotsize, j * m_slotsize, m_slotsize, m_slotsize, BLACK);
+				DrawRectangleLines(i * m_slotsize + leftOffset, j * m_slotsize, m_slotsize, m_slotsize, BLACK);
 			}
 		}
 	}
@@ -158,8 +153,19 @@ namespace MathLibrary
 		// Make top row clear
 		for (int i = 0; i < gridX; ++i)
 		{
+			// Increase score for every block gone
+			score += 1;
+
+			// Remove blocks
 			m_grid[i][0].value = 0;
 		}
+
+		if (levelmap[level+1] < score)
+		{
+			level += 1;
+		}
+
+		downTime = 1 - level*0.045;
 	}
 
 	void Application::SetOneGrid(int set)
@@ -202,14 +208,21 @@ namespace MathLibrary
 
 	void Application::BlockSpawn()
 	{
-		// Get block from queue
-		curBlock = new Block(BlockQueue.front()->data, 5, 0);
-
-		// Removes from vector
-		delete BlockQueue.front();
-		BlockQueue.erase(BlockQueue.begin());
-
 		QueueAdd(1);
+
+		// Get block from queue
+		if (BlockQueue.size() > 0)
+		{
+			curBlock = new Block(BlockQueue.front()->data, 5, 0);
+
+			// Removes from vector
+			delete BlockQueue.front();
+			BlockQueue.erase(BlockQueue.begin());
+		}
+		else
+		{
+			BlockSpawn();
+		}
 	}
 
 	void Application::RotateBlock()
@@ -335,7 +348,7 @@ namespace MathLibrary
 			BlockSpawn();
 		}
 
-		if (moveCountDown > 1.f)
+		if (moveCountDown > downTime)
 		{
 			moveBlockDown();
 			moveCountDown = 0.f;
@@ -358,6 +371,10 @@ namespace MathLibrary
 	void Application::Render()
 	{
 		DrawRectangle(0, 0, m_width, m_height, {80, 80, 80, 255});
+
+		DrawFPS(400+leftOffset, 80);
+		DrawText(std::format("Level: {}", level).c_str(), 400 + leftOffset, 10, 20, BLACK);
+		DrawText(std::format("Score: {}", score).c_str(), 400+leftOffset, 40, 20, BLACK);
 
 		DrawGrid();
 	}
